@@ -22,8 +22,13 @@ let catalog: Catalog = {
 // TODO: Создайте функцию saveCatalog(), которая делает:
 //   localStorage.setItem('catalog', JSON.stringify(catalog));
 // Её будем вызывать в двух местах: после addBook и после removeBook.
-
-
+const saved = localStorage.getItem('catalog');
+if (saved) {
+  catalog = JSON.parse(saved);
+}
+function saveCatalog(): void {
+  localStorage.setItem('catalog', JSON.stringify(catalog));
+}
 // ============================================================
 // DOM-элементы
 // ============================================================
@@ -85,6 +90,7 @@ function renderBooks(books: Book[]) {
     deleteBtn.textContent = 'Удалить';
     deleteBtn.addEventListener('click', () => {
       catalog = removeBook(catalog, book.id);
+      saveCatalog();
       renderBooks(Object.values(catalog));
     });
     card.append(deleteBtn);
@@ -113,7 +119,8 @@ form.addEventListener('submit', (e) => {
     
     // TODO (Задание 1): ВЫЗОВИТЕ saveCatalog() ЗДЕСЬ
     // (после addBook, но до reset и renderBooks)
-    
+    saveCatalog();
+
     form.reset();
     renderBooks(Object.values(catalog));  
   } catch(error){
