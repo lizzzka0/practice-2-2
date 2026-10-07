@@ -3,6 +3,7 @@ import { Book, formatBook, Catalog} from './task1-types';
 import { addBook, removeBook, getBook} from './task2-functions';
 import { applyFilters, filterByAuthor, filterByMinYear } from './task3-filters';
 import { createBookFromForm } from "./task4-integration";
+import { filterByTitle, sortBooks } from './task5-utils';
 
 // ============================================================
 // ИСХОДНОЕ СОСТОЯНИЕ
@@ -40,8 +41,8 @@ const yearInput = document.querySelector('#filterYear') as HTMLInputElement;
 const errorMessage = document.querySelector('#errorMessage') as HTMLDivElement;
 
 // TODO (Задание 2): получите новые элементы
-// const searchInput = document.querySelector('#searchInput') as HTMLInputElement;
-// const sortBySelect = document.querySelector('#sortBy') as HTMLSelectElement;
+const searchInput = document.querySelector('#searchInput') as HTMLInputElement;
+const sortBySelect = document.querySelector('#sortBy') as HTMLSelectElement;
 
 
 function renderBooks(books: Book[]) {
@@ -54,7 +55,7 @@ function renderBooks(books: Book[]) {
 
   books.forEach(book => {
     const card = document.createElement('div');
-    card.className = 'book-card';
+    card.classList.add('book-card', 'fade-in'); //Бонус
     
     const titleEl = document.createElement('h3');
     titleEl.textContent = formatBook(book);
@@ -91,7 +92,7 @@ function renderBooks(books: Book[]) {
     deleteBtn.addEventListener('click', () => {
       catalog = removeBook(catalog, book.id);
       saveCatalog();
-      renderBooks(Object.values(catalog));
+      updateFilteredBooks();
     });
     card.append(deleteBtn);
     bookList.append(card);
@@ -103,8 +104,7 @@ function renderBooks(books: Book[]) {
 // ============================================================
 // К этому моменту catalog уже должен содержать либо начальные данные,
 // либо данные из localStorage (см. TODO в самом верху файла).
-renderBooks(Object.values(catalog));
-
+updateFilteredBooks();
 
 // ============================================================
 // ОБРАБОТЧИК ФОРМЫ
@@ -122,7 +122,7 @@ form.addEventListener('submit', (e) => {
     saveCatalog();
 
     form.reset();
-    renderBooks(Object.values(catalog));  
+    updateFilteredBooks(); 
   } catch(error){
     if(error instanceof Error){   
       errorMessage.textContent = error.message; 
@@ -134,7 +134,7 @@ form.addEventListener('submit', (e) => {
 // ============================================================
 // ОБРАБОТЧИК ФИЛЬТРОВ
 // ============================================================
-filterBtn.addEventListener('click', () => {
+function updateFilteredBooks() {
   const filters: ((book: Book) => boolean)[] = [];
   
   if (authorInput.value.trim()) {
@@ -143,9 +143,15 @@ filterBtn.addEventListener('click', () => {
   if (yearInput.value) {
     filters.push(filterByMinYear(parseInt(yearInput.value, 10)));
   }
-
+  if (searchInput.value.trim()) {
+    filters.push(filterByTitle(searchInput.value.trim()));
+  }
   const allBooks = Object.values(catalog);
   const filteredBooks = applyFilters(allBooks, filters);
   
-  renderBooks(filteredBooks);
-});
+  renderBooks(sortBooks(filteredBooks, sortBySelect.value as "rating" | "year"));
+}
+
+filterBtn.addEventListener('click', updateFilteredBooks);
+searchInput.addEventListener('input', updateFilteredBooks);
+sortBySelect.addEventListener('change', updateFilteredBooks);
