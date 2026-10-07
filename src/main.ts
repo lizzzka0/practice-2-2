@@ -78,11 +78,16 @@ function renderBooks(books: Book[]) {
     //   1. catalog = removeBook(catalog, book.id)
     //   2. renderBooks(Object.values(catalog))
     // Добавьте кнопку в card через card.append(deleteBtn)
-    //
     // ВНИМАНИЕ: в index.html эту кнопку добавлять НЕ НУЖНО.
     // Она создаётся динамически для каждой карточки,
     // чтобы знать, какую именно книгу удалять (замыкание на book.id).
-    
+  const deleteBtn = document.createElement('button');
+    deleteBtn.textContent = 'Удалить';
+    deleteBtn.addEventListener('click', () => {
+      catalog = removeBook(catalog, book.id);
+      renderBooks(Object.values(catalog));
+    });
+    card.append(deleteBtn);
     bookList.append(card);
   });
 }
